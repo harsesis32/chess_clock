@@ -1,0 +1,123 @@
+import 'package:flutter/material.dart';
+import 'dart:async';
+
+void main() {
+  runApp(ChessClockApp());
+}
+
+class ChessClockApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: ChessClock(),
+    );
+  }
+}
+
+class ChessClock extends StatefulWidget {
+  @override
+  _ChessClockState createState() => _ChessClockState();
+}
+
+class _ChessClockState extends State<ChessClock> {
+  int redTime = 0;
+  int yellowTime = 0;
+  Timer? timer;
+  bool? isRedTurn;
+  bool isRunning = false;
+
+  void startTimer() {
+    if (timer != null) {
+      timer!.cancel();
+    }
+    timer = Timer.periodic(Duration(seconds: 1), (timer) {
+      setState(() {
+        if (isRedTurn == true) {
+          redTime++;
+        } else if (isRedTurn == false) {
+          yellowTime++;
+        }
+      });
+    });
+    setState(() => isRunning = true);
+  }
+
+  void stopTimer() {
+    timer?.cancel();
+    setState(() => isRunning = false);
+  }
+
+  void switchPlayer(bool redSelected) {
+    if (!isRunning) {
+      isRedTurn = redSelected;
+      startTimer();
+    } else {
+      setState(() => isRedTurn = redSelected);
+    }
+  }
+
+  void resetGame() {
+    stopTimer();
+    setState(() {
+      redTime = 0;
+      yellowTime = 0;
+      isRedTurn = null;
+    });
+  }
+
+  String formatTime(int seconds) {
+    return "\${(seconds ~/ 60).toString().padLeft(2, '0')}:\${(seconds % 60).toString().padLeft(2, '0')}";
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      body: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          GestureDetector(
+            onTap: () => switchPlayer(true),
+            child: Container(
+              color: Colors.red,
+              height: MediaQuery.of(context).size.height / 2 - 50,
+              child: Center(
+                child: Text(
+                  formatTime(redTime),
+                  style: TextStyle(fontSize: 50, color: Colors.white),
+                ),
+              ),
+            ),
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              ElevatedButton(
+                onPressed: stopTimer,
+                child: Text("Stop"),
+              ),
+              ElevatedButton(
+                onPressed: resetGame,
+                child: Text("Reset"),
+              ),
+            ],
+          ),
+          GestureDetector(
+            onTap: () => switchPlayer(false),
+            child: Container(
+              color: Colors.yellow,
+              height: MediaQuery.of(context).size.height / 2 - 50,
+              child: Center(
+                child: Text(
+                  formatTime(yellowTime),
+                  style: TextStyle(fontSize: 50, color: Colors.black),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
